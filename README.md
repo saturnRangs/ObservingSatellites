@@ -36,7 +36,8 @@ Section.
 1. Currently loading all satellites takes a long time. Eventually I would like to add multi-threading to speed up this process.
 ```
 Loading ~600 satellites -> ~15 second load time (Ex - OneWeb)
-Loading ~6500 satellites -> ~2 minute load time (Ex - Starlink)
+Loading ~6,500 satellites -> ~2 minute load time (Ex - Starlink)
+Loading ~10,000 satellites -> ~3 minute load time (Ex - all active satellites)
 ```
 
 2. This repository is not a method that takes into account all neccessary parameters for calculating if a satellite is visible relative to an observer. It does
