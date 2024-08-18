@@ -34,10 +34,10 @@ Section.
 
 ## 📋 Future Improvements 
 1. Currently loading all satellites takes a long time. Eventually I would like to add multi-threading to speed up this process.
-'''
+```
 Loading ~600 satellites -> ~15 second load time (Ex - OneWeb)
 Loading ~6500 satellites -> ~2 minute load time (Ex - Starlink)
-'''
+```
 
 2. This repository is not a method that takes into account all neccessary parameters for calculating if a satellite is visible relative to an observer. It does
 not account for flux from the Sun, flux from Earthshine, satellite geometry, satellite material properties, and many more parameters. In future releases of this repository, I hope to account for more of these parameters to get more accurate data. The link below is to a paper for modeling the optical brightness of satellites using the Bidirectional Reflectance Distribution Function which takes into account these parameters. https://arxiv.org/pdf/2305.11123
