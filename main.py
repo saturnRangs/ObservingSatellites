@@ -8,24 +8,22 @@ from timezonefinder import TimezoneFinder
 
 
 class observe_satellites():
-    def __init__(self, location, resolution, total_time, minimum_sat_elevation, sun_elevation):
+    def __init__(self, location, resolution, total_time, minimum_sat_elevation):
         '''
         Description:
-            The observe_satellites class is performing the main calculations to determiken the best time to observe satellites. 
-            It returns a list of dictionaries with datetimes and the corresponding count of satellites 
+            The observe_satellites class is performing the main calculations to determine the best time to observe satellites. 
+            It returns a list of dictionaries with datetimes and the corresponding count of satellites.
 
         Args:
             location: latitude and longitude of location -> [Latitude, Longitude]
-            resolution: the resolution to calculate data in minutes-> (int)
+            resolution: the resolution to calculate data in minutes -> (int)
             total_time: Total time into the future to calculate data in hours -> (int)
             minimum_sat_elevation: Minimum satellite horizon elevation in degrees (minimum 5 recommended) -> (int)
-            sun_elevation: Sun elevation when below the horizon
         '''
         self.location = location
         self.resolution = resolution
         self.total_time = total_time
         self.minimum_sat_elevation = minimum_sat_elevation
-        self.sun_elevation = sun_elevation
 
         self.observer = Topos(self.location[0], self.location[1])
         #Ephemeris file (required)
@@ -55,16 +53,16 @@ class observe_satellites():
 
         return now
 
-    #Formats the datetime using FORMAT_DATETIME and local_timezone
-    def format_time(self,input_time):
-        #Use utc_timezone to format time in UTC
+    #Formats the datetime using self.FORMAT_DATETIME and local_timezone
+    def format_time(self,input_time) -> dt:
+        #Use utc_timezone variable below to format time in UTC
         #utc_timezone = pytz.utc
         input_time = input_time.astimezone(timezone)
         formatted_time = dt.datetime.strftime(input_time, self.FORMAT_DATETIME)
 
         return formatted_time
 
-    #Determines separation between satellite and location as a skyfield.vectorlib.VectorSum
+    #Determines separation between satellite and location and returns <skyfield.vectorlib.VectorSum>
     def calculate_satellite_difference(self, specified_sat):
         satellite_difference = specified_sat - wgs84.latlon(self.location[0], self.location[1])
         
@@ -78,18 +76,17 @@ class observe_satellites():
 
         return alttude.degrees
 
-
     #Create the full time range
-    def set_timerange(self):
+    def set_timerange(self) -> list:
         now = self.convert_time()
 
-        # Create the timerange from now to now + total time 
+        # Create the timerange from now to now + self.total_time 
         timerange = self.ts.utc(now.year, now.month, now.day, now.hour, np.arange(now.minute, self.total_time * 60 + now.minute, self.resolution))
 
         return list(timerange)
 
     #We only care about when the sun is below the horizon (sun_altitude < 0) as well 
-    #as greater than a certain threshold (SUN_ELEVATION). This function 
+    #as greater than a certain threshold (self.SUN_ELEVATION). This function 
     #makes the final for loop much shorter.
     def get_sun_altitude(self) -> list:
         full_timerange = self.set_timerange()
@@ -98,7 +95,8 @@ class observe_satellites():
             apparent = self.astrometric.at(b).observe(self.sun).apparent()
             alt, az, distance = apparent.altaz()
             sun_altitude = alt.degrees
-            if sun_altitude < 0 and sun_altitude > self.sun_elevation:
+            #See README.md Documentation Section #2 for an explanation on the values below 
+            if sun_altitude < -3 and sun_altitude > -27:
                 pass
             else:
                 #Removing instances in the timerange where the altitude is too low
@@ -124,31 +122,29 @@ class observe_satellites():
                     sun_altitude = alt_sun.degrees
                     if sat_sunlit:
                         sat_altitude = self.calculate_diff_alt_az(y,ti)
-                        if sat_altitude > self.minimum_sat_elevation and sun_altitude < 0 and sun_altitude > self.sun_elevation:
+                        if sat_altitude > self.minimum_sat_elevation and sun_altitude < -3 and sun_altitude > -27:
                             #add a count if satellite is above minimum elevation, the sun is below the horizon, and sun is above
                             #the self.sun_elevation value 
                             timespan_counts[ti] += 1
                     else:
                         pass
-        #Final results with the formatted time. 
+        #Final results with the formatted time
         results = [{self.format_time(time): count} for time, count in timespan_counts.items() if time is not False]
 
         return results        
-
-    def graph_data(self):
-        pass
 
 
 if __name__ == "__main__":
     #Load load_tle class with max days set to 2 
     tle_class = load_tle.fetch_tles(2)
 
-    #load tles for ONEWEB satellites
-    load_satellites = tle_class.load_select_satellites("ONEWEB")
+    #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
+    load_satellites = tle_class.load_select_satellites("OneWeb")
 
     '''
     Use Cases:
         To load different groups of satellites, you will need to change the load_satellites variable above.
+        NOTE - The more satellites, the longer the load time.
         
         Load all Active Satellites:
             load_satellites = tle_class.load_all_satellites()
@@ -158,12 +154,12 @@ if __name__ == "__main__":
 
         Load only the satellite "NAVSTAR 43":
             load_satellites = tle_class.load_select_satellites("NAVSTAR 43")
-
     '''
+    #Change parameters below 
+    ####observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation)####
+    sat_obs = observe_satellites([33.645, -117.686], 30, 13, 5)
     
-    sat_obs = observe_satellites([33.64561821100173, -117.68649668652029], 15, 12, 5, -30)
     timezone = sat_obs.get_timezone()
-
     logger.info(f"Timezone set to {timezone}")
 
     final_results = sat_obs.main(load_satellites)
