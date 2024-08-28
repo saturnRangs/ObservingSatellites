@@ -3,6 +3,7 @@ import numpy as np
 from skyfield.api import load, Topos, wgs84
 import datetime as dt
 import pytz
+from stringcolor import * 
 import load_tle
 from timezonefinder import TimezoneFinder
 
@@ -91,8 +92,8 @@ class observe_satellites():
     def get_sun_altitude(self) -> list:
         full_timerange = self.set_timerange()
 
-        for a,b in enumerate(full_timerange):
-            apparent = self.astrometric.at(b).observe(self.sun).apparent()
+        for index,time in enumerate(full_timerange):
+            apparent = self.astrometric.at(time).observe(self.sun).apparent()
             alt, az, distance = apparent.altaz()
             sun_altitude = alt.degrees
             #See README.md Documentation Section #2 for an explanation on the values below 
@@ -101,7 +102,7 @@ class observe_satellites():
             else:
                 #Removing instances in the timerange where the altitude is too low
                 #or the sun is above the horizon
-                full_timerange[a] = False
+                full_timerange[index] = False
 
         return full_timerange
 
@@ -112,11 +113,11 @@ class observe_satellites():
         # Initialize a dictionary to store counts
         timespan_counts = {time: 0 for time in sun_timespan}
 
-        for i in satellite:
-            y = self.calculate_satellite_difference(i)
+        for sat in satellite:
+            y = self.calculate_satellite_difference(sat)
             for ti in sun_timespan:
                 if ti != False:
-                    sat_sunlit = i.at(ti).is_sunlit(self.ephemeris)
+                    sat_sunlit = sat.at(ti).is_sunlit(self.ephemeris)
                     apparent = self.astrometric.at(ti).observe(self.sun).apparent()
                     alt_sun, az, distance = apparent.altaz()
                     sun_altitude = alt_sun.degrees
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     tle_class = load_tle.fetch_tles(2)
 
     #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
-    load_satellites = tle_class.load_select_satellites("OneWeb")
+    load_satellites = tle_class.load_select_satellites("ONEWEB")
 
     '''
     Use Cases:
@@ -157,15 +158,21 @@ if __name__ == "__main__":
     '''
     #Change parameters below 
     ####observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation)####
-    sat_obs = observe_satellites([33.645, -117.686], 30, 13, 5)
+    sat_obs = observe_satellites([33.645, -117.686], 30, 12, 5)
     
     timezone = sat_obs.get_timezone()
     logger.info(f"Timezone set to {timezone}")
 
     final_results = sat_obs.main(load_satellites)
+    max_sats = max([max(entry.values()) for entry in final_results])
+    
     if final_results:
         for entry in final_results:
-            print(entry)
+            for time, nsat in entry.items():
+                if nsat == max_sats:
+                    print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
+                else:
+                    print(f"{time} - {nsat} total satellites")
     else:
         logger.warning("No satelltes visible. Enter different parameters.")
 

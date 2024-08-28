@@ -13,10 +13,10 @@ python3 -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. (Optional) Change arguments in the observe_satellites class to fit your needs (line 160). Descriptions for each argument can be found on line 17
+3. (Optional) Change arguments in the observe_satellites class to fit your needs (line 162). Descriptions for each argument can be found on line 14
 in main.py
 
-4. (Optional) If you would like to change the satellite group to observe, see line 145 (Use Cases) in main.py
+4. (Optional) If you would like to change the satellite group to observe, see line 143 (Use Cases) in main.py
 
 5. Once the packages have been successfully installed and parameters changed, run the main.py script
 ```
