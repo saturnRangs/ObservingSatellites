@@ -10,7 +10,8 @@ python3 -m venv .venv
 
 2. Download all required packages using pip
 ```
-pip install -r requirements.txt
+cd .venv
+pip install -r ../requirements.txt
 ```
 
 3. (Optional) Change arguments in the observe_satellites class to fit your needs (line 162). Descriptions for each argument can be found on line 14
@@ -20,7 +21,7 @@ in main.py
 
 5. Once the packages have been successfully installed and parameters changed, run the main.py script
 ```
-python3 main.py
+python3 ../main.py
 ```
 
 ## 📚 Documentation 

@@ -3,4 +3,4 @@ skyfield==1.49
 pytz==2021.3
 numpy==2.0.1
 timezonefinder==6.5.2
-stringcolor==1.2.3
+string-color==1.2.3

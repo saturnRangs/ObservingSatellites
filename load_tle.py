@@ -23,8 +23,8 @@ class fetch_tles():
             try:
                 load.download(self.celestrak_url, filename=self.full_tle_list)
                 logger.info("Downloading new tle list from Celestrak")
-            except:
-                logger.error("Failed to load new tle list from Celestrak - Exiting")
+            except Exception as e:
+                logger.error(f"Failed to load new tle list from Celestrak - error {e}")
                 sys.exit(1)
         else:
             logger.info(f"Using local {self.full_tle_list} to load tles")
