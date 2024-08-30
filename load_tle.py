@@ -2,6 +2,7 @@ from loguru import logger
 from skyfield.api import load
 import sys
 
+
 class fetch_tles():
     def __init__(self, max_days):
         '''
@@ -14,7 +15,8 @@ class fetch_tles():
         self.max_days = max_days
 
         #location where the tle list is stored
-        self.full_tle_list = 'assets/full_tle_list.csv'
+        self.full_tle_list = '../assets/full_tle_list.csv'
+        #url to a list of all active satellites in Celestrak
         self.celestrak_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
 
         if not load.exists(self.full_tle_list) or load.days_old(self.full_tle_list) >= self.max_days:
@@ -25,6 +27,7 @@ class fetch_tles():
                 logger.info("Downloading new tle list from Celestrak")
             except Exception as e:
                 logger.error(f"Failed to load new tle list from Celestrak - error {e}")
+                #exit script
                 sys.exit(1)
         else:
             logger.info(f"Using local {self.full_tle_list} to load tles")
@@ -46,11 +49,15 @@ class fetch_tles():
         satellite_full_list = []
         specify_sats = []
         
-        for i in all_sats:
-            i = str(i)
-            if i.startswith(select_sat.upper()):
-                specify_sats.append(i.split("catalog")[0])
+        for sat in all_sats:
+            sat = str(sat)
+            #searching for specified satellite 
+            if sat.startswith(select_sat.upper()):
+                #split the string at 'catalog' and append the first segment 
+                #(which is the name of the satellite)
+                specify_sats.append(sat.split("catalog")[0])
 
+        #take the list of strings and turn them back into tles
         for z in specify_sats:
             z = z.strip()
             satellite_full_list.append(by_name[z])

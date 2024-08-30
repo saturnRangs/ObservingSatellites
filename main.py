@@ -26,9 +26,10 @@ class observe_satellites():
         self.total_time = total_time
         self.minimum_sat_elevation = minimum_sat_elevation
 
+        #determining observer location based off of latitude & longitude
         self.observer = Topos(self.location[0], self.location[1])
         #Ephemeris file (required)
-        self.ephemeris = load('assets/de421.bsp')
+        self.ephemeris = load('../assets/de421.bsp')
         #Using ephemeris - define positions of Sun and Earth
         self.sun = self.ephemeris['sun']
         self.earth = self.ephemeris['earth']
@@ -69,9 +70,8 @@ class observe_satellites():
         
         return satellite_difference
 
-    #Calculates the altitude, azimuth and distance for a given satellite
-    #at a time z. 
-    def calculate_diff_alt_az(self, change, z) -> int:
+    #Calculates the altitude, azimuth and distance for a given satellite at time z
+    def calculate_diff_alt_az(self, change, z) -> float:
         fullrange = change.at(z)
         alttude, azimuth, dist = fullrange.altaz()
 
@@ -81,7 +81,7 @@ class observe_satellites():
     def set_timerange(self) -> list:
         now = self.convert_time()
 
-        # Create the timerange from now to now + self.total_time 
+        # Create the timerange from now to now + self.total_time using the self.resolution
         timerange = self.ts.utc(now.year, now.month, now.day, now.hour, np.arange(now.minute, self.total_time * 60 + now.minute, self.resolution))
 
         return list(timerange)
@@ -140,11 +140,11 @@ if __name__ == "__main__":
     tle_class = load_tle.fetch_tles(2)
 
     #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
-    load_satellites = tle_class.load_select_satellites("ONEWEB")
+    load_satellites = tle_class.load_select_satellites("OneWeb")
 
     '''
     Use Cases:
-        To load different groups of satellites, you will need to change the load_satellites variable above.
+        To load different groups of satellites, you will need to change the load_satellites input above.
         NOTE - The more satellites, the longer the load time.
         
         Load all Active Satellites:
@@ -156,20 +156,28 @@ if __name__ == "__main__":
         Load only the satellite "NAVSTAR 43":
             load_satellites = tle_class.load_select_satellites("NAVSTAR 43")
     '''
-    #Change parameters below 
-    ####observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation)####
+                                ####### Change parameters below #######
+    #### observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation) ####
     sat_obs = observe_satellites([33.645, -117.686], 30, 12, 5)
     
+    #specify timezone
     timezone = sat_obs.get_timezone()
     logger.info(f"Timezone set to {timezone}")
 
+    #load final results from main
     final_results = sat_obs.main(load_satellites)
+
+    #find the datetime that has the most visible satellites 
+    #AKA the best time to observe satellites
     max_sats = max([max(entry.values()) for entry in final_results])
     
+    #If final_results doesnt return a value, it usually means you need to 
+    #adjust the self.total_time and/or specified satellites 
     if final_results:
         for entry in final_results:
             for time, nsat in entry.items():
                 if nsat == max_sats:
+                    #printing best time to observe satellites
                     print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
                 else:
                     print(f"{time} - {nsat} total satellites")
