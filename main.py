@@ -29,7 +29,7 @@ class observe_satellites():
         #determining observer location based off of latitude & longitude
         self.observer = Topos(self.location[0], self.location[1])
         #Ephemeris file (required)
-        self.ephemeris = load('../assets/de421.bsp')
+        self.ephemeris = load('assets/de421.bsp')
         #Using ephemeris - define positions of Sun and Earth
         self.sun = self.ephemeris['sun']
         self.earth = self.ephemeris['earth']
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     tle_class = load_tle.fetch_tles(2)
 
     #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
-    load_satellites = tle_class.load_select_satellites("OneWeb")
+    load_satellites = tle_class.load_select_satellites("ICEYE")
 
     '''
     Use Cases:
