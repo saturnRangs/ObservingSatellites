@@ -15,7 +15,7 @@ class fetch_tles():
         self.max_days = max_days
 
         #location where the tle list is stored
-        self.full_tle_list = '../assets/full_tle_list.csv'
+        self.full_tle_list = 'assets/full_tle_list.csv'
         #url to a list of all active satellites in Celestrak
         self.celestrak_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
 

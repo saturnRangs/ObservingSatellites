@@ -6,12 +6,12 @@ Ever wonder what the best time to observe satellites from your location is? Whet
 1. Clone the repository and create a viritual environment in the terminal
 ```
 python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 2. Download all required packages using pip
 ```
-cd .venv
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 ```
 
 3. (Optional) Change arguments in the observe_satellites class in main.py to fit your needs (line 161). Descriptions for each argument can be found on line 14
@@ -21,7 +21,7 @@ in main.py
 
 5. Once the packages have been successfully installed and parameters changed, run the main.py script
 ```
-python3 ../main.py
+python3 main.py
 ```
 
 ## 📚 Documentation 
