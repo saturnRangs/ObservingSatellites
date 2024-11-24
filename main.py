@@ -2,7 +2,10 @@ from loguru import logger
 import numpy as np
 from skyfield.api import load, Topos, wgs84
 import datetime as dt
+import pandas as pd
 import pytz
+from dash import Dash, dcc, html
+import plotly.express as px
 from stringcolor import * 
 import load_tle
 from timezonefinder import TimezoneFinder
@@ -130,9 +133,19 @@ class observe_satellites():
                     else:
                         pass
         #Final results with the formatted time
-        results = [{self.format_time(time): count} for time, count in timespan_counts.items() if time is not False]
+        results = [{"time": self.format_time(time), "count": count} for time, count in timespan_counts.items() if time is not False]
 
-        return results        
+        for time, count in timespan_counts.items():
+            if time is False:
+                print(time, count)
+        #Translate to a pandas dataframe
+        #df = pd.Series(results)
+        ser = pd.Series(data=results)
+        return ser        
+    
+
+    def plot_data(self):
+        pass
 
 
 if __name__ == "__main__":
@@ -140,7 +153,7 @@ if __name__ == "__main__":
     tle_class = load_tle.fetch_tles(2)
 
     #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
-    load_satellites = tle_class.load_select_satellites("ICEYE")
+    load_satellites = tle_class.load_select_satellites("ONEWEB")
 
     '''
     Use Cases:
@@ -169,11 +182,11 @@ if __name__ == "__main__":
 
     #find the datetime that has the most visible satellites 
     #AKA the best time to observe satellites
-    max_sats = max([max(entry.values()) for entry in final_results])
+    #max_sats = max([max(entry.values()) for entry in final_results])
     
     #If final_results doesnt return a value, it usually means you need to 
     #adjust the self.total_time and/or specified satellites 
-    if final_results:
+    '''if final_results:
         for entry in final_results:
             for time, nsat in entry.items():
                 if nsat == max_sats:
@@ -184,4 +197,6 @@ if __name__ == "__main__":
     else:
         logger.warning("No satelltes visible. Enter different parameters.")
 
-    logger.info(f"Completed script")
+    logger.info(f"Completed script")'''
+
+    print(final_results)

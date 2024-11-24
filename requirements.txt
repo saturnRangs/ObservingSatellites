@@ -4,3 +4,5 @@ pytz==2021.3
 numpy==2.0.1
 timezonefinder==6.5.2
 string-color==1.2.3
+pandas==2.2.3
+dash==2.18.2
