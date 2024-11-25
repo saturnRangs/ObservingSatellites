@@ -127,6 +127,7 @@ class observe_satellites():
         #Final results with the formatted time
         results = {self.format_time(time): count for time, count in timespan_counts.items()}
 
+        #Format results into pandas series
         series = pd.Series(data=results)
 
         return series        
@@ -164,22 +165,21 @@ if __name__ == "__main__":
     #load final results from main
     final_results = sat_obs.main(load_satellites)
 
-    print(final_results)
     #find the datetime that has the most visible satellites 
     #AKA the best time to observe satellites
-    '''max_sats = max([max(entry.values()) for entry in final_results])
-    
-    #If final_results doesnt return a value, it usually means you need to 
-    #adjust the self.total_time and/or specified satellites 
-    if final_results:
-        for entry in final_results:
-            for time, nsat in entry.items():
-                if nsat == max_sats:
-                    #printing best time to observe satellites
-                    print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
-                else:
-                    print(f"{time} - {nsat} total satellites")
-    else:
-        logger.warning("No satelltes visible. Enter different parameters.")
+    max_sats = final_results.max()
 
-    logger.info(f"Completed script")'''
+    #If final_results doesnt return a value, it usually means you need to
+    #adjust the self.total_time and/or specified satellites
+    #if final_results:
+    
+    for time, nsat in final_results.items():
+        if nsat == max_sats:
+            #printing best time to observe satellites
+            print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
+        else:
+            print(f"{time} - {nsat} total satellites")
+   # else:
+    #    logger.warning("No satelltes visible. Enter different parameters.")
+
+    logger.info(f"Completed script")
