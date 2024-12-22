@@ -3,6 +3,7 @@ import numpy as np
 from skyfield.api import load, Topos, wgs84
 import datetime as dt
 import pytz
+import pandas as pd
 from stringcolor import * 
 import load_tle
 from timezonefinder import TimezoneFinder
@@ -91,48 +92,45 @@ class observe_satellites():
     #makes the final for loop much shorter.
     def get_sun_altitude(self) -> list:
         full_timerange = self.set_timerange()
+        sun_below_horizon = []
 
         for index,time in enumerate(full_timerange):
             apparent = self.astrometric.at(time).observe(self.sun).apparent()
             alt, az, distance = apparent.altaz()
             sun_altitude = alt.degrees
             #See README.md Documentation Section #2 for an explanation on the values below 
+            #Appending to list if the sun's altitude is in the threshold of -3 to -27 degrees
             if sun_altitude < -3 and sun_altitude > -27:
-                pass
-            else:
-                #Removing instances in the timerange where the altitude is too low
-                #or the sun is above the horizon
-                full_timerange[index] = False
+                sun_below_horizon.append(time)
 
-        return full_timerange
+        return sun_below_horizon
 
 
     def main(self, satellite) -> list:
         sun_timespan = self.get_sun_altitude()
-
         # Initialize a dictionary to store counts
         timespan_counts = {time: 0 for time in sun_timespan}
-
         for sat in satellite:
             y = self.calculate_satellite_difference(sat)
             for ti in sun_timespan:
-                if ti != False:
-                    sat_sunlit = sat.at(ti).is_sunlit(self.ephemeris)
-                    apparent = self.astrometric.at(ti).observe(self.sun).apparent()
-                    alt_sun, az, distance = apparent.altaz()
-                    sun_altitude = alt_sun.degrees
-                    if sat_sunlit:
-                        sat_altitude = self.calculate_diff_alt_az(y,ti)
-                        if sat_altitude > self.minimum_sat_elevation and sun_altitude < -3 and sun_altitude > -27:
-                            #add a count if satellite is above minimum elevation, the sun is below the horizon, and sun is above
-                            #the self.sun_elevation value 
-                            timespan_counts[ti] += 1
-                    else:
-                        pass
-        #Final results with the formatted time
-        results = [{self.format_time(time): count} for time, count in timespan_counts.items() if time is not False]
+                sat_sunlit = sat.at(ti).is_sunlit(self.ephemeris)
+                apparent = self.astrometric.at(ti).observe(self.sun).apparent()
+                alt_sun, az, distance = apparent.altaz()
+                sun_altitude = alt_sun.degrees
+                if sat_sunlit:
+                    sat_altitude = self.calculate_diff_alt_az(y,ti)
+                    if sat_altitude > self.minimum_sat_elevation and sun_altitude < -3 and sun_altitude > -27:
+                        #add a count if satellite is above minimum elevation, the sun is below the horizon, and sun is above
+                        #the self.sun_elevation value 
+                        timespan_counts[ti] += 1
 
-        return results        
+        #Final results with the formatted time
+        results = {self.format_time(time): count for time, count in timespan_counts.items()}
+
+        #Format results into pandas series
+        series = pd.Series(data=results)
+
+        return series
 
 
 if __name__ == "__main__":
@@ -140,7 +138,7 @@ if __name__ == "__main__":
     tle_class = load_tle.fetch_tles(2)
 
     #Defaults to load TLEs for ONEWEB satellites (See Use Cases below for other examples)
-    load_satellites = tle_class.load_select_satellites("ICEYE")
+    load_satellites = tle_class.load_select_satellites("ONEWEB")
 
     '''
     Use Cases:
@@ -157,8 +155,8 @@ if __name__ == "__main__":
             load_satellites = tle_class.load_select_satellites("NAVSTAR 43")
     '''
                                 ####### Change parameters below #######
-    #### observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation) ####
-    sat_obs = observe_satellites([33.645, -117.686], 30, 12, 5)
+    #### observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation) ####
+    sat_obs = observe_satellites([33.645, -117.842], 30, 12, 5)
     
     #specify timezone
     timezone = sat_obs.get_timezone()
@@ -169,19 +167,20 @@ if __name__ == "__main__":
 
     #find the datetime that has the most visible satellites 
     #AKA the best time to observe satellites
-    max_sats = max([max(entry.values()) for entry in final_results])
-    
-    #If final_results doesnt return a value, it usually means you need to 
-    #adjust the self.total_time and/or specified satellites 
-    if final_results:
-        for entry in final_results:
-            for time, nsat in entry.items():
-                if nsat == max_sats:
-                    #printing best time to observe satellites
-                    print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
-                else:
-                    print(f"{time} - {nsat} total satellites")
+    max_sats = final_results.max()
+
+    #If final_results doesnt return a value, it usually means you need to
+    #adjust the self.total_time and/or specified satellites
+    #if final_results doesn't have a length greater than 0 this means the series
+    #is empty and the observe_satellites class needs different parameters 
+    if len(final_results) > 0:
+        for time, nsat in final_results.items():
+            if nsat == max_sats:
+                #printing best time to observe satellites
+                print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
+            else:
+                print(f"{time} - {nsat} total satellites")
     else:
-        logger.warning("No satelltes visible. Enter different parameters.")
+        logger.warning("No satelltes visible. Enter different class parameters")
 
     logger.info(f"Completed script")

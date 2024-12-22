@@ -15,10 +15,10 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-3. (Optional) Change arguments in the observe_satellites class in main.py to fit your needs (line 161). Descriptions for each argument can be found on line 14
+3. (Optional) Change arguments in the observe_satellites class in main.py to fit your needs (line 159). Descriptions for each argument can be found on line 15
 in main.py
 
-4. (Optional) If you would like to change the satellite group to observe, see line 146 (Use Cases) in main.py
+4. (Optional) If you would like to change the satellite group to observe, see line 144 (Use Cases) in main.py
 
 5. Once the packages have been successfully installed and parameters changed, run the main.py script
 ```
