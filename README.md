@@ -2,15 +2,16 @@
 
 Ever wonder what the best time to observe satellites from your location is? Whether you want to observe a specific group of satellites (ex - Starlink) or all active satellites, this repository has the answer!
 
-## 📝 How to use 
+## 📝 Initial Installation 
 1. Clone the repository and create a viritual environment in the terminal
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-2. Download all required packages using pip
+2. Update pip and download all required packages inside .venv
 ```
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
@@ -20,6 +21,18 @@ in main.py
 4. (Optional) If you would like to change the satellite group to observe, see line 144 (Use Cases) in main.py
 
 5. Once the packages have been successfully installed and parameters changed, run the main.py script
+```
+python3 main.py
+```
+
+## 🏃‍♂️ Running the script 
+Whenever you run main.py you want to be inside the virtual environment you created. 
+Activate your venv by running:
+```
+source .venv/bin/activate
+```
+You should see a (.venv) in your CLI which indicates you are inside the virtual environment.
+You are all set to run the script:
 ```
 python3 main.py
 ```
