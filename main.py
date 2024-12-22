@@ -130,7 +130,7 @@ class observe_satellites():
         #Format results into pandas series
         series = pd.Series(data=results)
 
-        return series        
+        return series
 
 
 if __name__ == "__main__":
@@ -155,8 +155,8 @@ if __name__ == "__main__":
             load_satellites = tle_class.load_select_satellites("NAVSTAR 43")
     '''
                                 ####### Change parameters below #######
-    #### observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation, sun_elevation) ####
-    sat_obs = observe_satellites([33.645, -117.686], 60, 12, 5)
+    #### observe_satellites([Latitude, Longitude], resolution, total_time, minimum_sat_elevation) ####
+    sat_obs = observe_satellites([33.645, -117.842], 30, 12, 5)
     
     #specify timezone
     timezone = sat_obs.get_timezone()
@@ -171,15 +171,16 @@ if __name__ == "__main__":
 
     #If final_results doesnt return a value, it usually means you need to
     #adjust the self.total_time and/or specified satellites
-    #if final_results:
-    
-    for time, nsat in final_results.items():
-        if nsat == max_sats:
-            #printing best time to observe satellites
-            print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
-        else:
-            print(f"{time} - {nsat} total satellites")
-   # else:
-    #    logger.warning("No satelltes visible. Enter different parameters.")
+    #if final_results doesn't have a length greater than 0 this means the series
+    #is empty and the observe_satellites class needs different parameters 
+    if len(final_results) > 0:
+        for time, nsat in final_results.items():
+            if nsat == max_sats:
+                #printing best time to observe satellites
+                print(cs(f"{time} - {nsat} total satellites", "purple4").bold()) 
+            else:
+                print(f"{time} - {nsat} total satellites")
+    else:
+        logger.warning("No satelltes visible. Enter different class parameters")
 
     logger.info(f"Completed script")
